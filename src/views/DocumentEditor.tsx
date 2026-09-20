@@ -7,7 +7,7 @@ import { ScreenplayView } from "./ScreenplayView";
 import { StoryboardView } from "./StoryboardView";
 import { VisualView } from "./VisualView";
 
-const DEMO_READONLY = "样例模式只读，请切实时并连接本机创作台";
+const LIVE_READONLY = "未连接创作台，无法保存。请确认本机 dashboard 已启动，或经隧道把 /api 转到创作台。";
 
 export type SavedDocument = {
   tab: EpisodeTab;
@@ -63,7 +63,7 @@ export function DocumentEditor({
   const dirty = draft !== baseline;
   const canWrite = Boolean(liveConnected && fileDoc?.path && fileDoc.writable !== false && version);
   const readOnlyReason = !liveConnected
-    ? DEMO_READONLY
+    ? LIVE_READONLY
     : !fileDoc?.path
       ? "还没有对应 Markdown 路径，无法写回。"
       : fileDoc.writable === false

@@ -1,33 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
-import { loadDemoProject } from "./api/demo";
 import { friendlyFailure } from "./api/http";
 import { loadLiveProject } from "./api/live";
 import { StatusBadge } from "./components/StatusBadge";
 import { applyScreenplayTitle } from "./lib/parseEpisodeMap";
 import { readRoute, writeRoute } from "./lib/hashRoute";
-import type { EpisodeTab, FileDoc, StudioMode, StudioProject } from "./types";
+import type { EpisodeTab, FileDoc, StudioProject } from "./types";
 import { confirmLeaveDirty, type SavedDocument } from "./views/DocumentEditor";
 import { EpisodeDesk } from "./views/EpisodeDesk";
 import { ProjectHome } from "./views/ProjectHome";
 
-const MODE_KEY = "drama-studio-mode";
 const GRAY_KEY = "drama-studio-gray";
 
-function initialMode(): StudioMode {
-  const stored = localStorage.getItem(MODE_KEY);
-  const fromHash = readRoute(stored === "live" ? "live" : "demo").mode;
-  return fromHash;
-}
-
 export function App() {
-  const [mode, setMode] = useState<StudioMode>(initialMode);
   const [gray, setGray] = useState(() => localStorage.getItem(GRAY_KEY) === "1");
   const [project, setProject] = useState<StudioProject | null>(null);
-  const [episodeId, setEpisodeId] = useState<string | null>(() => readRoute("demo").episodeId);
-  const [tab, setTab] = useState<EpisodeTab>(() => readRoute("demo").tab);
+  const [episodeId, setEpisodeId] = useState<string | null>(() => readRoute().episodeId);
+  const [tab, setTab] = useState<EpisodeTab>(() => readRoute().tab);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deskDirty, setDeskDirty] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     document.documentElement.dataset.gray = gray ? "on" : "off";
@@ -35,27 +27,25 @@ export function App() {
   }, [gray]);
 
   useEffect(() => {
-    localStorage.setItem(MODE_KEY, mode);
-    writeRoute({ mode, episodeId, tab });
-  }, [mode, episodeId, tab]);
+    writeRoute({ episodeId, tab });
+  }, [episodeId, tab]);
 
   useEffect(() => {
     const onHash = () => {
-      const route = readRoute(mode);
-      setMode(route.mode);
+      const route = readRoute();
       setEpisodeId(route.episodeId);
       setTab(route.tab);
     };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
-  }, [mode]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    const task = mode === "demo" ? Promise.resolve(loadDemoProject()) : loadLiveProject();
-    task
+    setProject(null);
+    loadLiveProject()
       .then((next) => {
         if (cancelled) return;
         setProject(next);
@@ -65,17 +55,13 @@ export function App() {
         if (cancelled) return;
         const message = reason instanceof Error ? friendlyFailure(reason.message) : "无法载入项目。";
         setError(message);
-        if (mode === "live") {
-          setProject(loadDemoProject());
-        } else {
-          setProject(null);
-        }
+        setProject(null);
         setLoading(false);
       });
     return () => {
       cancelled = true;
     };
-  }, [mode]);
+  }, [reloadToken]);
 
   const episode = useMemo(
     () => project?.episodes.find((item) => item.id === episodeId) ?? null,
@@ -85,13 +71,6 @@ export function App() {
   useEffect(() => {
     if (!episode) setDeskDirty(false);
   }, [episode]);
-
-  function requestMode(next: StudioMode) {
-    if (next === mode) return;
-    if (!confirmLeaveDirty(deskDirty)) return;
-    setDeskDirty(false);
-    setMode(next);
-  }
 
   function applySavedDocument(update: SavedDocument) {
     setProject((current) => {
@@ -131,7 +110,7 @@ export function App() {
       <header className="topbar">
         <a
           className="brand"
-          href={`#/${mode}`}
+          href="#/"
           onClick={(event) => {
             event.preventDefault();
             if (!confirmLeaveDirty(deskDirty)) return;
@@ -148,24 +127,6 @@ export function App() {
           </span>
         </a>
         <div className="top-tools">
-          <div className="mode-switch" role="group" aria-label="数据来源">
-            <button
-              type="button"
-              className={mode === "demo" ? "is-on" : ""}
-              aria-pressed={mode === "demo"}
-              onClick={() => requestMode("demo")}
-            >
-              样例
-            </button>
-            <button
-              type="button"
-              className={mode === "live" ? "is-on" : ""}
-              aria-pressed={mode === "live"}
-              onClick={() => requestMode("live")}
-            >
-              实时
-            </button>
-          </div>
           <button
             type="button"
             className={gray ? "toggle is-on" : "toggle"}
@@ -179,22 +140,40 @@ export function App() {
 
       {error ? (
         <div className="banner" role="status">
-          <StatusBadge label={mode === "live" ? "实时未接通" : "载入失败"} tone="warn" />
-          <p>
-            {error}
-            {mode === "live" ? " 已回退到仓库样例，只读，无法写回。" : ""}
-          </p>
+          <StatusBadge label="创作台未接通" tone="warn" />
+          <p>{error}</p>
         </div>
       ) : (
         <div className="banner quiet">
-          <StatusBadge label={mode === "demo" ? "样例模式" : "实时模式"} tone={mode === "demo" ? "warn" : "ready"} />
-          <p>{project?.sourceNote || "正在打开项目…"}</p>
+          <StatusBadge label="实时项目" tone="ready" />
+          <p>{project?.sourceNote || "正在从创作台打开项目…"}</p>
         </div>
       )}
 
       <main>
-        {loading || !project ? (
-          <div className="loading-panel">正在打开项目…</div>
+        {loading ? (
+          <div className="loading-panel">正在从创作台打开项目…</div>
+        ) : error || !project ? (
+          <section className="error-panel" role="alert">
+            <p className="eyebrow">实时项目</p>
+            <h1>创作台未接通</h1>
+            <p>
+              打不开短剧创作台，因此无法载入项目。这里不会回退到仓库样例，也不会假装这是正在编辑的稿。
+            </p>
+            <p>{error || "创作台不可达。"}</p>
+            <ol>
+              <li>本机启动创作台：<code>python3 dashboard_server.py --workspace &lt;工作区&gt; --port 8787</code></li>
+              <li>
+                开发时复制 <code>.env.example</code> 为 <code>.env</code>，把 <code>DASHBOARD_ORIGIN</code> 指到同一端口，再{" "}
+                <code>npm run dev</code>
+              </li>
+              <li>经 Cloudflare 隧道远程改稿时，把隧道指到本机 Vite（<code>5173</code> / <code>4173</code>），由代理转发 <code>/api</code></li>
+              <li>GitHub Pages 是静态页，浏览器不能直连你本机的创作台；要阅读和写回，请用本机或隧道。</li>
+            </ol>
+            <button type="button" className="text-btn btn-primary" onClick={() => setReloadToken((n) => n + 1)}>
+              重新连接
+            </button>
+          </section>
         ) : episode ? (
           <EpisodeDesk
             project={project}
@@ -212,7 +191,6 @@ export function App() {
           <ProjectHome
             meta={project.meta}
             episodes={project.episodes}
-            mode={mode}
             sourceNote={project.sourceNote}
             onOpenEpisode={(id) => {
               setEpisodeId(id);

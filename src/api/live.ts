@@ -70,7 +70,7 @@ export async function loadLiveProject(preferredId = "yaofei-bus"): Promise<Studi
     episodeMap,
     files,
     fileDocs,
-    sourceNote: `实时模式：已从本机创作台读取项目 ${projectId}。可改剧本 / 视觉设定 / 分镜并写回。`,
+    sourceNote: `已从创作台读取项目 ${projectId}。可改剧本 / 视觉设定 / 分镜并写回。`,
     liveConnected: true,
   });
   if (status.title) project.meta.title = status.title;

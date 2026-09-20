@@ -1,12 +1,12 @@
-import type { EpisodeTab, StudioMode } from "../types";
+import type { EpisodeTab } from "../types";
 
 export type Route = {
-  mode: StudioMode;
   episodeId: string | null;
   tab: EpisodeTab;
 };
 
 const TABS: EpisodeTab[] = ["screenplay", "visual", "storyboard"];
+const LEGACY_MODE = new Set(["demo", "live"]);
 
 function tabFromSegment(value: string | undefined): EpisodeTab {
   if (value === "视觉设定" || value === "visual") return "visual";
@@ -14,23 +14,18 @@ function tabFromSegment(value: string | undefined): EpisodeTab {
   return "screenplay";
 }
 
-export function readRoute(fallbackMode: StudioMode): Route {
+export function readRoute(): Route {
   const hash = location.hash.replace(/^#\/?/, "");
   const parts = hash.split("/").filter(Boolean);
-  let mode = fallbackMode;
-  let rest = parts;
-  if (parts[0] === "demo" || parts[0] === "live") {
-    mode = parts[0];
-    rest = parts.slice(1);
-  }
+  const rest = parts[0] && LEGACY_MODE.has(parts[0]) ? parts.slice(1) : parts;
   const episodeId = rest[0]?.match(/^EP\d+$/) ? rest[0] : null;
   const tab = tabFromSegment(rest[1]);
-  return { mode, episodeId, tab: episodeId ? tab : "screenplay" };
+  return { episodeId, tab: episodeId ? tab : "screenplay" };
 }
 
 export function writeRoute(route: Route) {
   const tabName = route.tab === "visual" ? "视觉设定" : route.tab === "storyboard" ? "分镜" : "剧本";
-  const path = route.episodeId ? `#/${route.mode}/${route.episodeId}/${tabName}` : `#/${route.mode}`;
+  const path = route.episodeId ? `#/${route.episodeId}/${tabName}` : "#/";
   if (location.hash !== path) history.replaceState(null, "", `${location.pathname}${location.search}${path}`);
 }
 

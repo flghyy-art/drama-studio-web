@@ -1,5 +1,3 @@
-export type StudioMode = "demo" | "live";
-
 export type EpisodeTab = "screenplay" | "visual" | "storyboard";
 
 export type EpisodeStatus = "ready" | "planned";

@@ -40,24 +40,30 @@ export function friendlyFailure(message: string): string {
   return FAILURE_COPY[message.trim()] || message;
 }
 
-const DASHBOARD_DOWN = "连不上本机创作台。请确认 dashboard 已启动，并把 .env 里的 DASHBOARD_ORIGIN 指到同一端口后重启 npm run dev。";
+export const DASHBOARD_DOWN =
+  "连不上短剧创作台。请确认本机 dashboard 已启动；开发时把 .env 的 DASHBOARD_ORIGIN 指到同一端口后重启 npm run dev。经 Cloudflare 隧道访问时，把隧道指到本机 Vite，或把 /api 反代到创作台。";
+
+function isUnreachableStatus(status: number): boolean {
+  return status === 0 || status === 502 || status === 503 || status === 504;
+}
 
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
   let response: Response;
   try {
     response = await fetch(path, options);
   } catch {
-    throw new ApiError(DASHBOARD_DOWN);
+    throw new ApiError(DASHBOARD_DOWN, 0, "desk-unreachable");
   }
   let data: unknown = null;
   try {
     data = await response.json();
   } catch {
-    if (response.status >= 500) throw new ApiError(DASHBOARD_DOWN);
-    throw new ApiError(response.ok ? "创作台返回了无法识别的数据。" : `HTTP ${response.status}`);
+    throw new ApiError(DASHBOARD_DOWN, response.status, "desk-unreachable");
   }
   if (!response.ok) {
-    if (response.status >= 500) throw new ApiError(DASHBOARD_DOWN, response.status);
+    if (isUnreachableStatus(response.status) || response.status >= 500) {
+      throw new ApiError(DASHBOARD_DOWN, response.status, "desk-unreachable");
+    }
     const error =
       typeof data === "object" && data && "error" in data ? String((data as { error: unknown }).error) : `HTTP ${response.status}`;
     throw new ApiError(friendlyFailure(error), response.status, error);
@@ -68,7 +74,7 @@ export async function api<T>(path: string, options?: RequestInit): Promise<T> {
 export async function establishSession(): Promise<void> {
   const hashValue = location.hash.startsWith("#") ? location.hash.slice(1) : "";
   const token = hashValue.includes("/") ? "" : hashValue;
-  if (!token || ["home", "demo", "live"].includes(token)) return;
+  if (!token || ["home", "demo", "live"].includes(token)) return; // demo/live：旧书签，不是会话 token
   const response = await fetch("/api/session", {
     method: "POST",
     headers: { "X-Short-Drama-Token": token },

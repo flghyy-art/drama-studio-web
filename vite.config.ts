@@ -40,6 +40,8 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "127.0.0.1",
       port: 5173,
+      // Cloudflare quick tunnel / 自定义隧道主机名
+      allowedHosts: true,
       proxy: {
         // GET /api/file 与 PUT /api/file（写回 expectedVersion）都转到本机创作台
         "/api": {
@@ -51,6 +53,7 @@ export default defineConfig(({ mode }) => {
     preview: {
       host: "127.0.0.1",
       port: 4173,
+      allowedHosts: true,
       proxy: {
         "/api": {
           target: dashboardOrigin,
