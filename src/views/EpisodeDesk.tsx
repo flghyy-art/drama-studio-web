@@ -19,6 +19,7 @@ export function EpisodeDesk({ project, episode, tab, onTab, onHome }: Props) {
   const markdown = project.files[tab][episode.id];
   return (
     <section className="desk">
+      <div className="desk-chrome">
       <div className="desk-bar">
         <button type="button" className="text-btn" onClick={onHome}>
           ← 项目首页
@@ -48,6 +49,7 @@ export function EpisodeDesk({ project, episode, tab, onTab, onHome }: Props) {
             </button>
           );
         })}
+      </div>
       </div>
       <div className="preview-stage" role="tabpanel">
         {!markdown ? (

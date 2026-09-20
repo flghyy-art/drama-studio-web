@@ -26,7 +26,7 @@ export function VisualView({ markdown }: { markdown: string }) {
                 </header>
                 <dl>
                   {entry.fields.map((field, index) => (
-                    <div key={index}>
+                    <div key={index} className={field.label === "连续性锁" ? "lock-field" : undefined}>
                       <dt>{field.label}</dt>
                       <dd>
                         <InlineText nodes={field.nodes} />

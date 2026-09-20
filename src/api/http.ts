@@ -17,15 +17,24 @@ export function friendlyFailure(message: string): string {
   return FAILURE_COPY[message.trim()] || message;
 }
 
+const DASHBOARD_DOWN = "连不上本机创作台。请确认 dashboard 已启动，并把 .env 里的 DASHBOARD_ORIGIN 指到同一端口后重启 npm run dev。";
+
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(path, options);
+  let response: Response;
+  try {
+    response = await fetch(path, options);
+  } catch {
+    throw new ApiError(DASHBOARD_DOWN);
+  }
   let data: unknown = null;
   try {
     data = await response.json();
   } catch {
+    if (response.status >= 500) throw new ApiError(DASHBOARD_DOWN);
     throw new ApiError(response.ok ? "创作台返回了无法识别的数据。" : `HTTP ${response.status}`);
   }
   if (!response.ok) {
+    if (response.status >= 500) throw new ApiError(DASHBOARD_DOWN);
     const error = typeof data === "object" && data && "error" in data ? String((data as { error: unknown }).error) : `HTTP ${response.status}`;
     throw new ApiError(friendlyFailure(error));
   }

@@ -229,6 +229,13 @@ html[data-gray="on"] .phone {
   color: var(--accent);
 }
 
+.desk-chrome {
+  position: sticky;
+  top: 4.15rem;
+  z-index: 3;
+  padding: 0.15rem 0 0.65rem;
+  background: linear-gradient(180deg, var(--bg) 70%, transparent);
+}
 .desk-bar {
   display: flex;
   align-items: end;
@@ -244,11 +251,20 @@ html[data-gray="on"] .phone {
 .tab small { font-size: 0.7rem; opacity: 0.72; }
 
 .preview-stage {
+  position: relative;
   padding: 1.4rem 1.3rem 2rem;
   border-radius: 18px;
   background: var(--paper);
   color: var(--paper-ink);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+}
+html[data-gray="on"] .preview-stage::before {
+  content: "灰度母版预览 · 只看构图与明暗";
+  display: block;
+  margin-bottom: 0.85rem;
+  color: #666;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
 }
 .doc-stack { display: grid; gap: 1rem; }
 .doc-lead h2 { font-size: 1.8rem; }
@@ -312,6 +328,7 @@ html[data-gray="on"] .empty-episode dl { background: #f7f7f7; }
   font-size: 0.72rem;
 }
 .visual-card dd, .shot-fields dd, .empty-episode dd { margin: 0.15rem 0 0; line-height: 1.65; }
+.lock-field dd { font-size: 0.82rem; word-break: break-all; }
 
 .shot-list { display: grid; gap: 0.85rem; margin: 0; padding: 0; list-style: none; }
 .shot-card { display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); overflow: hidden; }
