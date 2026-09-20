@@ -1,9 +1,8 @@
+import { useState } from "react";
 import { tabLabel } from "../api/paths";
 import type { EpisodeCard, EpisodeTab, StudioProject } from "../types";
+import { confirmLeaveDirty, DocumentEditor, type SavedDocument } from "./DocumentEditor";
 import { EmptyEpisode } from "./EmptyEpisode";
-import { ScreenplayView } from "./ScreenplayView";
-import { StoryboardView } from "./StoryboardView";
-import { VisualView } from "./VisualView";
 
 const TABS: EpisodeTab[] = ["screenplay", "visual", "storyboard"];
 
@@ -13,15 +12,36 @@ type Props = {
   tab: EpisodeTab;
   onTab: (tab: EpisodeTab) => void;
   onHome: () => void;
+  onSaved: (update: SavedDocument) => void;
+  onDirtyChange: (dirty: boolean) => void;
 };
 
-export function EpisodeDesk({ project, episode, tab, onTab, onHome }: Props) {
+export function EpisodeDesk({ project, episode, tab, onTab, onHome, onSaved, onDirtyChange }: Props) {
+  const [dirty, setDirty] = useState(false);
+
+  function reportDirty(next: boolean) {
+    setDirty(next);
+    onDirtyChange(next);
+  }
   const markdown = project.files[tab][episode.id];
+  const fileDoc = project.fileDocs[tab]?.[episode.id];
+
+  function requestTab(next: EpisodeTab) {
+    if (next === tab) return;
+    if (!confirmLeaveDirty(dirty)) return;
+    onTab(next);
+  }
+
+  function requestHome() {
+    if (!confirmLeaveDirty(dirty)) return;
+    onHome();
+  }
+
   return (
     <section className="desk">
       <div className="desk-chrome">
         <div className="desk-bar">
-          <button type="button" className="text-btn" onClick={onHome}>
+          <button type="button" className="text-btn" onClick={requestHome}>
             ← 项目首页
           </button>
           <div className="desk-identity">
@@ -42,7 +62,7 @@ export function EpisodeDesk({ project, episode, tab, onTab, onHome }: Props) {
                 role="tab"
                 aria-selected={tab === item}
                 className={tab === item ? "tab is-active" : "tab"}
-                onClick={() => onTab(item)}
+                onClick={() => requestTab(item)}
               >
                 {tabLabel(item)}
                 <small>{has ? "已写入" : "缺稿"}</small>
@@ -51,17 +71,23 @@ export function EpisodeDesk({ project, episode, tab, onTab, onHome }: Props) {
           })}
         </div>
       </div>
-      <div className="preview-stage" role="tabpanel">
-        {!markdown ? (
+      {!markdown ? (
+        <div className="preview-stage" role="tabpanel">
           <EmptyEpisode episode={episode} tabLabel={tabLabel(tab)} />
-        ) : tab === "screenplay" ? (
-          <ScreenplayView markdown={markdown} />
-        ) : tab === "visual" ? (
-          <VisualView markdown={markdown} />
-        ) : (
-          <StoryboardView markdown={markdown} />
-        )}
-      </div>
+        </div>
+      ) : (
+        <DocumentEditor
+          key={`${episode.id}:${tab}`}
+          projectId={project.meta.id}
+          episodeId={episode.id}
+          tab={tab}
+          markdown={markdown}
+          fileDoc={fileDoc}
+          liveConnected={project.liveConnected}
+          onDirtyChange={reportDirty}
+          onSaved={onSaved}
+        />
+      )}
     </section>
   );
 }

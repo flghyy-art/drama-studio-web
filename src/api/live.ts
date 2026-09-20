@@ -1,11 +1,11 @@
-import type { DashboardProject, EpisodeTab, StudioProject, TreeNode } from "../types";
-import { assembleProject } from "./buildProject";
+import type { DashboardProject, EpisodeTab, FileDoc, StudioProject, TreeNode } from "../types";
+import { assembleProject, emptyFileDocs } from "./buildProject";
+import { readProjectFile } from "./file";
 import { api, establishSession } from "./http";
 import { findEpisodeFile, findEpisodeMap, findProjectConfig, flattenTree, listEpisodeIds, preferProjectId } from "./paths";
 
 type ProjectsResponse = { projects: DashboardProject[] };
 type TreeResponse = { tree: TreeNode[]; warnings?: string[] };
-type FileResponse = { content: string };
 type StatusResponse = { title?: string };
 
 const TABS: EpisodeTab[] = ["screenplay", "visual", "storyboard"];
@@ -34,11 +34,9 @@ export async function loadLiveProject(preferredId = "yaofei-bus"): Promise<Studi
 
   const [configJson, episodeMap] = await Promise.all([
     configPath
-      ? api<FileResponse>(`/api/file?project=${encodeURIComponent(projectId)}&path=${encodeURIComponent(configPath)}`).then((file) => file.content)
+      ? readProjectFile(projectId, configPath).then((file) => file.content)
       : Promise.resolve(JSON.stringify({ title: status.title || projectId, format: { aspect_ratio: "9:16", episode_count: 4 } })),
-    mapPath
-      ? api<FileResponse>(`/api/file?project=${encodeURIComponent(projectId)}&path=${encodeURIComponent(mapPath)}`).then((file) => file.content)
-      : Promise.resolve(""),
+    mapPath ? readProjectFile(projectId, mapPath).then((file) => file.content) : Promise.resolve(""),
   ]);
 
   const files: Record<EpisodeTab, Record<string, string>> = {
@@ -46,6 +44,7 @@ export async function loadLiveProject(preferredId = "yaofei-bus"): Promise<Studi
     visual: {},
     storyboard: {},
   };
+  const fileDocs = emptyFileDocs();
 
   const episodeIds = listEpisodeIds(paths);
   await Promise.all(
@@ -53,8 +52,14 @@ export async function loadLiveProject(preferredId = "yaofei-bus"): Promise<Studi
       TABS.map(async (tab) => {
         const path = findEpisodeFile(paths, episodeId, tab);
         if (!path) return;
-        const file = await api<FileResponse>(`/api/file?project=${encodeURIComponent(projectId)}&path=${encodeURIComponent(path)}`);
+        const file = await readProjectFile(projectId, path);
         files[tab][episodeId] = file.content;
+        const doc: FileDoc = {
+          path,
+          version: file.version || "",
+          writable: file.writable !== false,
+        };
+        fileDocs[tab][episodeId] = doc;
       }),
     ),
   );
@@ -64,7 +69,9 @@ export async function loadLiveProject(preferredId = "yaofei-bus"): Promise<Studi
     configJson,
     episodeMap,
     files,
-    sourceNote: `实时模式：已从本机创作台读取项目 ${projectId}。`,
+    fileDocs,
+    sourceNote: `实时模式：已从本机创作台读取项目 ${projectId}。可改剧本 / 视觉设定 / 分镜并写回。`,
+    liveConnected: true,
   });
   if (status.title) project.meta.title = status.title;
   return project;

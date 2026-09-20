@@ -17,7 +17,7 @@ export function ProjectHome({ meta, episodes, mode, sourceNote, onOpenEpisode }:
           <p className="eyebrow">短剧项目</p>
           <h1>{meta.title}</h1>
           <p className="hero-desc">
-            竖屏成片，按集阅读剧本、视觉锁面和分镜。创作和生产仍在 drama-skills 里完成，这里只打开已经写下来的正文。
+            竖屏成片，按集阅读剧本、视觉锁面和分镜。样例只读；实时模式可改已解析的 Markdown 并写回本机创作台。生产仍在 drama-skills 里完成，这里不假装生成画面。
           </p>
           <div className="hero-badges">
             <StatusBadge label={`画幅 ${meta.aspectRatio}`} tone="neutral" />

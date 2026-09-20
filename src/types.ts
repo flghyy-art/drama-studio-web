@@ -27,12 +27,20 @@ export type ProjectMeta = {
   statusTone: "neutral" | "ready" | "warn";
 };
 
+export type FileDoc = {
+  path: string;
+  version: string;
+  writable: boolean;
+};
+
 export type StudioProject = {
   meta: ProjectMeta;
   episodes: EpisodeCard[];
   files: Record<EpisodeTab, Record<string, string>>;
+  fileDocs: Record<EpisodeTab, Record<string, FileDoc>>;
   episodeMapMarkdown: string;
   sourceNote: string;
+  liveConnected: boolean;
 };
 
 export type InlineNode =
