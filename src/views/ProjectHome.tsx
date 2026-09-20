@@ -1,15 +1,14 @@
 import { StatusBadge } from "../components/StatusBadge";
-import type { EpisodeCard, ProjectMeta, StudioMode } from "../types";
+import type { EpisodeCard, ProjectMeta } from "../types";
 
 type Props = {
   meta: ProjectMeta;
   episodes: EpisodeCard[];
-  mode: StudioMode;
   sourceNote: string;
   onOpenEpisode: (id: string) => void;
 };
 
-export function ProjectHome({ meta, episodes, mode, sourceNote, onOpenEpisode }: Props) {
+export function ProjectHome({ meta, episodes, sourceNote, onOpenEpisode }: Props) {
   return (
     <section className="home">
       <div className="home-hero">
@@ -17,7 +16,8 @@ export function ProjectHome({ meta, episodes, mode, sourceNote, onOpenEpisode }:
           <p className="eyebrow">短剧项目</p>
           <h1>{meta.title}</h1>
           <p className="hero-desc">
-            竖屏成片，按集阅读剧本、视觉锁面和分镜。样例只读；实时模式可改已解析的 Markdown 并写回本机创作台。生产仍在 drama-skills 里完成，这里不假装生成画面。
+            竖屏成片，按集阅读剧本、视觉锁面和分镜。已接通创作台时可改已解析的 Markdown 并写回。生产仍在
+            drama-skills 里完成，这里不假装生成画面。
           </p>
           <div className="hero-badges">
             <StatusBadge label={`画幅 ${meta.aspectRatio}`} tone="neutral" />
@@ -25,7 +25,7 @@ export function ProjectHome({ meta, episodes, mode, sourceNote, onOpenEpisode }:
             <StatusBadge label={`单集约 ${meta.targetSeconds} 秒`} tone="neutral" />
             <StatusBadge label={meta.promptLanguage === "zh" ? "中文提示词" : meta.promptLanguage} tone="neutral" />
             <StatusBadge label={meta.statusLabel} tone={meta.statusTone} />
-            <StatusBadge label={mode === "demo" ? "样例模式" : "实时模式"} tone={mode === "demo" ? "warn" : "ready"} />
+            <StatusBadge label="创作台已接通" tone="ready" />
           </div>
         </div>
         <aside className="aspect-frame" aria-label={`画幅 ${meta.aspectRatio}`}>

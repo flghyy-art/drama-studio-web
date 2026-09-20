@@ -141,6 +141,29 @@ main { width: min(1120px, calc(100% - 2rem)); margin: 1.1rem auto 3rem; }
   color: var(--muted);
   text-align: center;
 }
+.error-panel {
+  max-width: 40rem;
+  margin: 1.4rem auto 0;
+  padding: 2rem 1.6rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+}
+.error-panel h1 { font-size: 1.8rem; margin-bottom: 0.7rem; }
+.error-panel p { color: var(--muted); }
+.error-panel ol {
+  margin: 1rem 0 1.4rem;
+  padding-left: 1.2rem;
+  color: var(--ink);
+}
+.error-panel li { margin: 0.45rem 0; }
+.error-panel code {
+  font-size: 0.82em;
+  padding: 0.08rem 0.35rem;
+  border-radius: 6px;
+  background: #0c0b0a;
+  color: var(--paper);
+}
 
 .home-hero {
   display: grid;
