@@ -1,0 +1,37 @@
+{
+  "created_at": "2026-09-20T10:28:53.115685Z",
+  "creator_authority": {
+    "constraints": [],
+    "decisions_artifact": "创作者决策/",
+    "delivery_surface": {
+      "aspect": null,
+      "overlay_regions": [],
+      "source_ref": null,
+      "status": "unset"
+    },
+    "production_profile": {
+      "choices": {},
+      "status": "unset"
+    },
+    "visual_direction": {
+      "choices": {
+        "look_development": null
+      },
+      "status": "unset"
+    }
+  },
+  "format": {
+    "aspect_ratio": "9:16",
+    "episode_count": 4,
+    "pacing": {
+      "seconds_per_action_paragraph": null,
+      "spoken_characters_per_second": null
+    },
+    "prompt_language": "zh",
+    "target_seconds_per_episode": 100.0
+  },
+  "language": "zh",
+  "project_id": "SD-F31B8EDBB68E",
+  "schema_version": "1.0.0-draft",
+  "title": "姚飞·公交资源暴露"
+}
