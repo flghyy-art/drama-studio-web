@@ -60,7 +60,7 @@ src/views/                 首页与三个阅读页
 
 ## GitHub Pages
 
-合并到 `main` 后，Actions 会构建 `dist` 并发布到 Pages。预期地址：
+推到或合并进 `main` 后，Actions 会构建 `dist` 并发布到 Pages。打开中的 PR 只跑 `npm run build`，不会发布。预期地址：
 
 `https://flghyy-art.github.io/drama-studio-web/`
 

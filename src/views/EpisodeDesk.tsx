@@ -20,36 +20,36 @@ export function EpisodeDesk({ project, episode, tab, onTab, onHome }: Props) {
   return (
     <section className="desk">
       <div className="desk-chrome">
-      <div className="desk-bar">
-        <button type="button" className="text-btn" onClick={onHome}>
-          ← 项目首页
-        </button>
-        <div className="desk-identity">
-          <p className="eyebrow">{episode.id}</p>
-          <h2>{episode.title}</h2>
+        <div className="desk-bar">
+          <button type="button" className="text-btn" onClick={onHome}>
+            ← 项目首页
+          </button>
+          <div className="desk-identity">
+            <p className="eyebrow">{episode.id}</p>
+            <h2>{episode.title}</h2>
+          </div>
+          <p className="desk-meta">
+            {episode.duration} · {episode.statusLabel}
+          </p>
         </div>
-        <p className="desk-meta">
-          {episode.duration} · {episode.statusLabel}
-        </p>
-      </div>
-      <div className="tab-row" role="tablist" aria-label="本集文稿">
-        {TABS.map((item) => {
-          const has = Boolean(project.files[item][episode.id]);
-          return (
-            <button
-              key={item}
-              type="button"
-              role="tab"
-              aria-selected={tab === item}
-              className={tab === item ? "tab is-active" : "tab"}
-              onClick={() => onTab(item)}
-            >
-              {tabLabel(item)}
-              <small>{has ? "已写入" : "缺稿"}</small>
-            </button>
-          );
-        })}
-      </div>
+        <div className="tab-row" role="tablist" aria-label="本集文稿">
+          {TABS.map((item) => {
+            const has = Boolean(project.files[item][episode.id]);
+            return (
+              <button
+                key={item}
+                type="button"
+                role="tab"
+                aria-selected={tab === item}
+                className={tab === item ? "tab is-active" : "tab"}
+                onClick={() => onTab(item)}
+              >
+                {tabLabel(item)}
+                <small>{has ? "已写入" : "缺稿"}</small>
+              </button>
+            );
+          })}
+        </div>
       </div>
       <div className="preview-stage" role="tabpanel">
         {!markdown ? (

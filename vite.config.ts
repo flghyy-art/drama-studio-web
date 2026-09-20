@@ -23,6 +23,18 @@ export default defineConfig(({ mode }) => {
             next();
           });
         },
+        configurePreviewServer(server) {
+          server.middlewares.use((req, res, next) => {
+            const url = (req as { url?: string }).url;
+            if (url === "/" || url === "/index.html") {
+              res.statusCode = 302;
+              res.setHeader("Location", "/drama-studio-web/");
+              res.end();
+              return;
+            }
+            next();
+          });
+        },
       },
     ],
     server: {
