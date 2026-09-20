@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-浏览器打开终端提示的本地地址（默认 `http://127.0.0.1:5173`）。左上角保持「样例」。首页应出现《姚飞·公交资源暴露》，点 EP001 可读三份已写入的 Markdown。
+浏览器打开终端提示的本地地址。仓库 `base` 是 `/drama-studio-web/`，所以开发地址一般是 `http://127.0.0.1:5173/drama-studio-web/`。左上角保持「样例」。首页应出现《姚飞·公交资源暴露》，点 EP001 可读三份已写入的 Markdown。
 
 ```bash
 npm run build
@@ -57,3 +57,13 @@ src/views/                 首页与三个阅读页
 ```
 
 没有账号系统，也没有假的生成队列。缺某一集的正文时，页上会写出分集地图里已有的规划，而不是空白卡片。
+
+## GitHub Pages
+
+合并到 `main` 后，Actions 会构建 `dist` 并发布到 Pages。预期地址：
+
+`https://flghyy-art.github.io/drama-studio-web/`
+
+仓库设置里若尚未开通 Pages：Settings → Pages → Source 选 **GitHub Actions**。前端用 hash 路由（`#/demo/EP001/剧本`），子路径 `base` 不会把刷新打到 404。
+
+Pages 上只有**样例**正文。浏览器不能跨站调用你本机的 dashboard；要走实时模式，请在本机 `npm run dev`，用 Vite 代理。
