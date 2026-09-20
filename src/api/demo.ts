@@ -18,6 +18,7 @@ export function loadDemoProject(): StudioProject {
       visual: { EP001: ep001Visual },
       storyboard: { EP001: ep001Storyboard },
     },
-    sourceNote: "样例数据来自本仓库附带的 yaofei-bus 正文，未连接本机创作台。",
+    sourceNote: "样例数据来自本仓库附带的 yaofei-bus 正文，只读，未连接本机创作台。",
+    liveConnected: false,
   });
 }

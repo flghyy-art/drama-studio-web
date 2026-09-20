@@ -250,6 +250,80 @@ html[data-gray="on"] .phone {
 .tab { display: inline-flex; align-items: baseline; gap: 0.4rem; }
 .tab small { font-size: 0.7rem; opacity: 0.72; }
 
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem 1rem;
+  margin-bottom: 0.7rem;
+}
+.editor-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.7rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.file-path { word-break: break-all; }
+.dirty-dot {
+  color: var(--warn);
+  font-weight: 700;
+}
+.editor-actions { display: flex; gap: 0.45rem; margin-left: auto; }
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: transparent;
+}
+.btn-primary:disabled,
+.text-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.editor-hint, .editor-notice {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+}
+.editor-hint { color: var(--warn); }
+.editor-hint.quiet { color: var(--muted); }
+.editor-notice.tone-ok { color: var(--ok); }
+.editor-notice.tone-warn { color: var(--warn); }
+.editor-notice.tone-danger { color: #d27a6a; }
+.editor-conflict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0 0 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(201, 163, 90, 0.4);
+  border-radius: 12px;
+  background: var(--bg-elev);
+}
+.editor-conflict p { margin: 0; color: var(--warn); font-size: 0.86rem; }
+.editor-split {
+  display: grid;
+  grid-template-columns: minmax(18rem, 1fr) minmax(20rem, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+.editor-pane { display: grid; gap: 0.45rem; }
+.markdown-editor {
+  width: 100%;
+  min-height: 32rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: #0f0e0c;
+  color: var(--ink);
+  font: 14px/1.7 var(--font-ui);
+  resize: vertical;
+}
+.markdown-editor:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.editor-preview { min-height: 32rem; }
+
 .preview-stage {
   position: relative;
   padding: 1.4rem 1.3rem 2rem;
@@ -365,10 +439,12 @@ html[data-gray="on"] .freeze-prompt { background: #fff; }
 .empty-episode dl { padding: 1rem; }
 
 @media (max-width: 860px) {
-  .home-hero, .episode-map, .shot-card { grid-template-columns: 1fr; }
+  .home-hero, .episode-map, .shot-card, .editor-split { grid-template-columns: 1fr; }
   .section-head, .desk-bar { flex-direction: column; align-items: start; }
   .section-note { text-align: left; }
   .phone { width: 8.5rem; }
+  .editor-actions { margin-left: 0; }
+  .markdown-editor { min-height: 18rem; }
 }
 
 @media (max-width: 560px) {

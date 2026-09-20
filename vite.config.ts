@@ -41,6 +41,7 @@ export default defineConfig(({ mode }) => {
       host: "127.0.0.1",
       port: 5173,
       proxy: {
+        // GET /api/file 与 PUT /api/file（写回 expectedVersion）都转到本机创作台
         "/api": {
           target: dashboardOrigin,
           changeOrigin: true,

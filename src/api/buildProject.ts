@@ -1,4 +1,8 @@
-import type { EpisodeTab, ProjectMeta, StudioProject } from "../types";
+import type { EpisodeTab, FileDoc, ProjectMeta, StudioProject } from "../types";
+
+export function emptyFileDocs(): Record<EpisodeTab, Record<string, FileDoc>> {
+  return { screenplay: {}, visual: {}, storyboard: {} };
+}
 import { applyScreenplayTitle, parseEpisodeMap } from "../lib/parseEpisodeMap";
 
 type ShortDramaJson = {
@@ -36,7 +40,9 @@ export function assembleProject(input: {
   configJson: string;
   episodeMap: string;
   files: Record<EpisodeTab, Record<string, string>>;
+  fileDocs?: Record<EpisodeTab, Record<string, FileDoc>>;
   sourceNote: string;
+  liveConnected?: boolean;
 }): StudioProject {
   const meta = parseShortDrama(input.configJson, input.id);
   const readyIds = new Set(
@@ -78,7 +84,9 @@ export function assembleProject(input: {
     meta,
     episodes,
     files: input.files,
+    fileDocs: input.fileDocs || emptyFileDocs(),
     episodeMapMarkdown: input.episodeMap,
     sourceNote: input.sourceNote,
+    liveConnected: Boolean(input.liveConnected),
   };
 }

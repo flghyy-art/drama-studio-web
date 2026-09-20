@@ -3,8 +3,10 @@ import { loadDemoProject } from "./api/demo";
 import { friendlyFailure } from "./api/http";
 import { loadLiveProject } from "./api/live";
 import { StatusBadge } from "./components/StatusBadge";
+import { applyScreenplayTitle } from "./lib/parseEpisodeMap";
 import { readRoute, writeRoute } from "./lib/hashRoute";
-import type { EpisodeTab, StudioMode, StudioProject } from "./types";
+import type { EpisodeTab, FileDoc, StudioMode, StudioProject } from "./types";
+import { confirmLeaveDirty, type SavedDocument } from "./views/DocumentEditor";
 import { EpisodeDesk } from "./views/EpisodeDesk";
 import { ProjectHome } from "./views/ProjectHome";
 
@@ -25,6 +27,7 @@ export function App() {
   const [tab, setTab] = useState<EpisodeTab>(() => readRoute("demo").tab);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deskDirty, setDeskDirty] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.gray = gray ? "on" : "off";
@@ -79,6 +82,50 @@ export function App() {
     [project, episodeId],
   );
 
+  useEffect(() => {
+    if (!episode) setDeskDirty(false);
+  }, [episode]);
+
+  function requestMode(next: StudioMode) {
+    if (next === mode) return;
+    if (!confirmLeaveDirty(deskDirty)) return;
+    setDeskDirty(false);
+    setMode(next);
+  }
+
+  function applySavedDocument(update: SavedDocument) {
+    setProject((current) => {
+      if (!current) return current;
+      const episodes = current.episodes.map((item) => ({ ...item }));
+      if (update.tab === "screenplay") {
+        applyScreenplayTitle(episodes, update.episodeId, update.content);
+      }
+      const previous: FileDoc | undefined = current.fileDocs[update.tab][update.episodeId];
+      return {
+        ...current,
+        episodes,
+        files: {
+          ...current.files,
+          [update.tab]: {
+            ...current.files[update.tab],
+            [update.episodeId]: update.content,
+          },
+        },
+        fileDocs: {
+          ...current.fileDocs,
+          [update.tab]: {
+            ...current.fileDocs[update.tab],
+            [update.episodeId]: {
+              path: previous?.path || "",
+              writable: previous?.writable !== false,
+              version: update.version,
+            },
+          },
+        },
+      };
+    });
+  }
+
   return (
     <div className="app">
       <header className="topbar">
@@ -87,6 +134,8 @@ export function App() {
           href={`#/${mode}`}
           onClick={(event) => {
             event.preventDefault();
+            if (!confirmLeaveDirty(deskDirty)) return;
+            setDeskDirty(false);
             setEpisodeId(null);
           }}
         >
@@ -95,7 +144,7 @@ export function App() {
           </span>
           <span>
             <strong>短剧工作室</strong>
-            <small>创作者阅读台</small>
+            <small>阅读与改稿</small>
           </span>
         </a>
         <div className="top-tools">
@@ -104,7 +153,7 @@ export function App() {
               type="button"
               className={mode === "demo" ? "is-on" : ""}
               aria-pressed={mode === "demo"}
-              onClick={() => setMode("demo")}
+              onClick={() => requestMode("demo")}
             >
               样例
             </button>
@@ -112,7 +161,7 @@ export function App() {
               type="button"
               className={mode === "live" ? "is-on" : ""}
               aria-pressed={mode === "live"}
-              onClick={() => setMode("live")}
+              onClick={() => requestMode("live")}
             >
               实时
             </button>
@@ -133,7 +182,7 @@ export function App() {
           <StatusBadge label={mode === "live" ? "实时未接通" : "载入失败"} tone="warn" />
           <p>
             {error}
-            {mode === "live" ? " 已回退到仓库样例，便于继续阅读。" : ""}
+            {mode === "live" ? " 已回退到仓库样例，只读，无法写回。" : ""}
           </p>
         </div>
       ) : (
@@ -152,7 +201,12 @@ export function App() {
             episode={episode}
             tab={tab}
             onTab={setTab}
-            onHome={() => setEpisodeId(null)}
+            onHome={() => {
+              setDeskDirty(false);
+              setEpisodeId(null);
+            }}
+            onSaved={applySavedDocument}
+            onDirtyChange={setDeskDirty}
           />
         ) : (
           <ProjectHome
